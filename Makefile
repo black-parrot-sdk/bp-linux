@@ -3,7 +3,7 @@ export LINUX_TARGET ?= riscv64-unknown-linux-gnu
 
 OPENSBI_NCPUS ?= 1
 
-BP_LINUX_DIR := $(BP_SDK_DIR)/bp_linux
+BP_LINUX_DIR := $(BP_SDK_DIR)/linux
 
 GENDTS_PY ?= $(BP_LINUX_DIR)/gendts.py
 
