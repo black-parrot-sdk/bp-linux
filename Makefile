@@ -1,10 +1,11 @@
 
 export LINUX_TARGET ?= riscv64-unknown-linux-gnu
 
-OPENSBI_NCPUS ?= 1
-
+TOP ?= $(shell git rev-parse --show-toplevel)
+BP_SDK_DIR ?= $(TOP)/..
 BP_LINUX_DIR := $(BP_SDK_DIR)/linux
 
+OPENSBI_NCPUS ?= 1
 GENDTS_PY ?= $(BP_LINUX_DIR)/gendts.py
 
 opensbi_srcdir   := $(BP_SDK_DIR)/opensbi
@@ -80,6 +81,21 @@ $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary)
 linux.riscv: $(fw_payload)
 	cp $< $@
 
-buildroot: $(buildroot_sysroot_stamp)
+buildroot: $(buildroot_tar)
+sysroot: $(buildroot_sysroot_stamp)
 vmlinux: $(vmlinux_stripped)
-fw_payload: $(fw_payload)
+opensbi: $(fw_payload)
+
+clean:
+	rm -rf $(wrkdir)/*
+
+clean_opensbi:
+	rm -rf $(opensbi_wrkdir)
+
+clean_vmlinux: clean_opensbi
+	rm -rf $(linux_wrkdir)
+
+clean_sysroot: clean_vmlinux
+	rm -rf $(buildroot_sysroot) $(buildroot_sysroot_stamp)
+
+clean_buildroot: clean
