@@ -1,12 +1,15 @@
 
 export LINUX_TARGET ?= riscv64-unknown-linux-gnu
 
-TOP ?= $(shell git rev-parse --show-toplevel)
-BP_SDK_DIR ?= $(TOP)/..
-BP_LINUX_DIR := $(BP_SDK_DIR)/linux
+TOP                ?= $(shell git rev-parse --show-toplevel)
+BP_SDK_DIR         ?= $(TOP)/..
+BP_SDK_INSTALL_DIR ?= $(BP_SDK_DIR)/install
+BP_SDK_BIN_DIR     ?= $(BP_SDK_INSTALL_DIR)/bin
+BP_LINUX_DIR       := $(BP_SDK_DIR)/linux
+PATH               := $(BP_SDK_BIN_DIR):$(PATH)
 
 OPENSBI_NCPUS ?= 1
-GENDTS_PY ?= $(BP_LINUX_DIR)/gendts.py
+GENDTS_PY     ?= $(BP_LINUX_DIR)/gendts.py
 
 opensbi_srcdir   := $(BP_SDK_DIR)/opensbi
 linux_srcdir     := $(BP_LINUX_DIR)/linux
