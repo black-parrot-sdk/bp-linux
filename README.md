@@ -43,3 +43,15 @@ make clean_sysroot
 make clean_vmlinux
 make clean_opensbi
 ```
+
+For example, to rebuild linux for a different OPENSBI\_NCPUS value you can wipe the opensbi build and rebuild with the new number of cores:
+```
+make clean_opensbi
+make linux.riscv OPENSBI_NCPUS=<new_n>
+```
+
+Or to change the initial shell script, you can wipe the sysroot folder and regenerate it with the new script:
+```
+make clean_sysroot
+make linux.riscv WITH_SHELL=<new_shell>
+```
