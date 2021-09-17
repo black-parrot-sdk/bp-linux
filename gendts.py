@@ -36,7 +36,7 @@ class DTS:
       print('''
 \t\tCPU{0}: cpu@{0} {{
 \t\t\tdevice_type = "cpu";
-\t\t\treg = <{0}>;
+\t\t\treg = <0x{0}>;
 \t\t\tstatus = "okay";
 \t\t\tcompatible = "riscv";
 \t\t\triscv,isa = "rv64imafdc";
@@ -48,14 +48,14 @@ class DTS:
 \t\t\t\tcompatible = "riscv,cpu-intc";
 \t\t\t}};
 \t\t}};'''
-      .format(str(i))
+      .format(format(i, 'x'))
       )
 
     print('''
 \t};
 \tmemory@80000000 {
 \t\tdevice_type = "memory";
-\t\treg = <0x0 0x80000000 0x0 0x04000000>;
+\t\treg = <0x0 0x80000000 0x0 0x20000000>;
 \t};
 \tsoc {
 \t\t#address-cells = <2>;
@@ -68,7 +68,7 @@ class DTS:
     )
 
     for i in range(0, self.ncpus):
-      print('''\t\t\t\t&CPU{0}_intc 3 &CPU{0}_intc 7'''.format(str(i)))
+      print('''\t\t\t\t&CPU{0}_intc 3 &CPU{0}_intc 7'''.format(format(i, 'x')))
 
     print('''\t\t\t>;
 \t\t\treg = <0x0 0x300000 0x0 0xc0000>;

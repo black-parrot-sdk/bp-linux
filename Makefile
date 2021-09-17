@@ -102,3 +102,5 @@ clean_sysroot: clean_vmlinux
 	rm -rf $(buildroot_sysroot) $(buildroot_sysroot_stamp)
 
 clean_buildroot: clean
+
+clean_all: clean clean_sysroot
