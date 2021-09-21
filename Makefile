@@ -25,7 +25,6 @@ buildroot_config        := $(BP_LINUX_DIR)/cfg/buildroot_initramfs_config
 
 linux_wrkdir     := $(wrkdir)/linux
 linux_defconfig  := $(BP_LINUX_DIR)/cfg/linux_defconfig
-linux_patch      := $(BP_LINUX_DIR)/cfg/linux.patch
 vmlinux          := $(linux_wrkdir)/vmlinux
 vmlinux_stripped := $(linux_wrkdir)/vmlinux-stripped
 vmlinux_binary   := $(linux_wrkdir)/vmlinux.bin
@@ -53,7 +52,6 @@ endif
 	touch $@
 
 $(linux_wrkdir)/.config: $(linux_srcdir)
-	cd $(linux_srcdir); git stash; git apply $(linux_patch)
 	mkdir -p $(dir $@)
 	cp -p $(linux_defconfig) $@
 	$(MAKE) -C $< O=$(linux_wrkdir) ARCH=riscv olddefconfig
