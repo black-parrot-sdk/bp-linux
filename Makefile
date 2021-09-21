@@ -32,6 +32,8 @@ vmlinux_binary   := $(linux_wrkdir)/vmlinux.bin
 
 opensbi_wrkdir   := $(wrkdir)/opensbi
 fw_payload       := $(opensbi_wrkdir)/platform/blackparrot/firmware/fw_payload.elf
+bp_dts           := $(opensbi_wrkdir)/platform/blackparrot/blackparrot.dts
+bp_dtb           := $(opensbi_wrkdir)/platform/blackparrot/blackparrot.dtb
 
 $(buildroot_wrkdir)/.config: $(buildroot_srcdir)
 	mkdir -p $(dir $@)
@@ -71,9 +73,14 @@ $(vmlinux_stripped): $(vmlinux)
 $(vmlinux_binary): $(vmlinux_stripped)
 	$(LINUX_TARGET)-objcopy -O binary $< $@
 
-$(fw_payload): $(opensbi_srcdir) $(vmlinux_binary)
+$(bp_dts):
 	mkdir -p $(opensbi_wrkdir)/platform/blackparrot
-	python $(GENDTS_PY) --ncpus=$(OPENSBI_NCPUS) | dtc -O dtb -o $(opensbi_wrkdir)/platform/blackparrot/blackparrot.dtb
+	python $(GENDTS_PY) --ncpus=$(OPENSBI_NCPUS) > $(bp_dts)
+
+$(bp_dtb): $(bp_dts)
+	dtc -O dtb -o $(bp_dtb) < $<
+
+$(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 	$(MAKE) -C $< O=$(opensbi_wrkdir) \
 		PLATFORM=blackparrot \
 		PLATFORM_RISCV_ISA=rv64imafd \
