@@ -1,14 +1,15 @@
-diff --git a/arch/riscv/kernel/head.S b/arch/riscv/kernel/head.S
-index 98a406474e7d..623e1cac5630 100644
---- a/arch/riscv/kernel/head.S
-+++ b/arch/riscv/kernel/head.S
-@@ -73,8 +73,8 @@ relocate:
- 	la a0, trampoline_pg_dir
- 	srl a0, a0, PAGE_SHIFT
- 	or a0, a0, a1
--	sfence.vma
- 	csrw CSR_SATP, a0
-+	sfence.vma
- .align 2
- 1:
- 	/* Set trap vector to spin forever to help debug */
+diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+index c0cddf0fc22d..3ea92c41f2cb 100644
+--- a/arch/riscv/mm/init.c
++++ b/arch/riscv/mm/init.c
+@@ -741,6 +741,10 @@ static void __init setup_vm_final(void)
+ 	create_kernel_page_table(swapper_pg_dir, false);
+ #endif
+ 
++	/* Map dtb */
++	create_pgd_mapping(swapper_pg_dir, __va(dtb_early_pa),
++		dtb_early_pa, PMD_SIZE, PAGE_KERNEL);
++
+ 	/* Clear fixmap PTE and PMD mappings */
+ 	clear_fixmap(FIX_PTE);
+ 	clear_fixmap(FIX_PMD);
