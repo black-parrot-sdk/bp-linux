@@ -51,7 +51,7 @@ endif
 	touch $@
 
 $(linux_wrkdir)/.config: $(linux_srcdir)
-	cd $(linux_srcdir); git stash; git apply $(linux_patch)
+	cd $(linux_srcdir); git stash
 	mkdir -p $(dir $@)
 	cp -p $(linux_defconfig) $@
 	$(MAKE) -C $< O=$(linux_wrkdir) ARCH=riscv olddefconfig
