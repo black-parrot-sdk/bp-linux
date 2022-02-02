@@ -73,6 +73,30 @@ class DTS:
     print('''\t\t\t>;
 \t\t\treg = <0x0 0x300000 0x0 0xc0000>;
 \t\t};
+
+\t\tplic: interrupt-controller@800000 {
+\t\t\t#address-cells = <0>;
+\t\t\t#interrupt-cells = <1>;
+\t\t\tcompatible = "sifive,plic-1.0.0";
+\t\t\tinterrupt-controller;
+\t\t\tinterrupts-extended = <&CPU0_intc 9>;
+\t\t\treg = <0x0 0x800000 0x0 0x4000000>;
+\t\t\triscv,ndev = <1>;
+\t\t};
+
+\t\tethernet@501000 {
+\t\t\tcompatible = "litex,liteeth";
+\t\t\tlocal-mac-address = [dc a6 32 bb 7d a4];
+\t\t\treg=<0x0 0x501000 0x0 0x100>,
+\t\t\t\t<0x0 0x500000 0x0 0x1000>;
+\t\t\treg-names="mac", "buffer";
+\t\t\tlitex,rx-slots = <1>;
+\t\t\tlitex,tx-slots = <1>;
+\t\t\tlitex,slot-size = <0x800>;
+\t\t\tinterrupt-parent=<&plic>;
+\t\t\tinterrupts=<1>;
+\t\t};
+
 \t};
 \thtif {
 \t\tcompatible = "ucb,htif0";
