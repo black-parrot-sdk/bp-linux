@@ -51,7 +51,6 @@ endif
 	touch $@
 
 $(linux_wrkdir)/.config: $(linux_srcdir)
-	cd $(linux_srcdir)
 	mkdir -p $(dir $@)
 	cp -p $(linux_defconfig) $@
 	$(MAKE) -C $< O=$(linux_wrkdir) ARCH=riscv olddefconfig
