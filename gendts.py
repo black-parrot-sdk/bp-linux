@@ -77,6 +77,9 @@ class DTS:
 \thtif {
 \t\tcompatible = "ucb,htif0";
 \t};
+\tchosen {
+\t\tbootargs = "console=hvc0 loglevel=8";
+\t};
 };'''
     )
 
