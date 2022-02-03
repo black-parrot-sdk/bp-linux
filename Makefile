@@ -51,13 +51,13 @@ endif
 	touch $@
 
 $(linux_wrkdir)/.config: $(linux_srcdir)
-	cd $(linux_srcdir); git stash
+	cd $(linux_srcdir)
 	mkdir -p $(dir $@)
 	cp -p $(linux_defconfig) $@
 	$(MAKE) -C $< O=$(linux_wrkdir) ARCH=riscv olddefconfig
 
 $(vmlinux): $(linux_srcdir) $(linux_wrkdir)/.config $(buildroot_sysroot_stamp)
-	echo "n" | $(MAKE) -j 4 -C $< O=$(linux_wrkdir) \
+	echo "n" | $(MAKE) -j -C $< O=$(linux_wrkdir) \
 		CONFIG_INITRAMFS_SOURCE="$(BP_LINUX_DIR)/cfg/initramfs.txt $(buildroot_sysroot)" \
 		CONFIG_INITRAMFS_ROOT_UID=$(shell id -u) \
 		CONFIG_INITRAMFS_ROOT_GID=$(shell id -g) \
