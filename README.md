@@ -5,10 +5,11 @@ The following commands are run within this directory.
 
 ## Build
 ```
-make linux.riscv [WITH_SHELL=<path_to_sh_script>] [OPENSBI_NCPUS=<n>]
+make linux.riscv [WITH_SHELL=<path_to_sh_script>] [OPENSBI_NCPUS=<n>] [MEM_SIZE=<s>]
 ```
-* OPENSBI\_NCPUS: Number of harts that boot linux(default: 1)
+* OPENSBI\_NCPUS: Number of harts that boot linux (default: 1)
 * WITH\_SHELL: If set, at the end of the boot, runs the given shell script instead of creating the BusyBox login shell.
+* MEM\_SIZE: size in MB of memory (default: 64), sets memory size in device tree; current BP max is 2048
 
 **default login:** user="root", password=""
 
