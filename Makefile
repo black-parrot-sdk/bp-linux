@@ -8,6 +8,7 @@ BP_SDK_BIN_DIR     ?= $(BP_SDK_INSTALL_DIR)/bin
 BP_LINUX_DIR       := $(BP_SDK_DIR)/linux
 PATH               := $(BP_SDK_BIN_DIR):$(PATH)
 
+PYTHON ?= python
 DTC ?= dtc
 
 OPENSBI_NCPUS ?= 1
@@ -77,7 +78,7 @@ $(vmlinux_binary): $(vmlinux_stripped)
 
 $(bp_dts):
 	mkdir -p $(opensbi_wrkdir)/platform/blackparrot
-	python $(GENDTS_PY) --ncpus=$(OPENSBI_NCPUS) --mem-size=$(MEM_SIZE) > $(bp_dts)
+	$(PYTHON) $(GENDTS_PY) --ncpus=$(OPENSBI_NCPUS) --mem-size=$(MEM_SIZE) > $(bp_dts)
 
 $(bp_dtb): $(bp_dts)
 	$(DTC) -O dtb -o $(bp_dtb) $<
