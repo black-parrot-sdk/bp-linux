@@ -78,7 +78,7 @@ $(bp_dts):
 	python $(GENDTS_PY) --ncpus=$(OPENSBI_NCPUS) --mem-size=$(MEM_SIZE) > $(bp_dts)
 
 $(bp_dtb): $(bp_dts)
-	dtc -O dtb -o $(bp_dtb) < $<
+	dtc -O dtb -o $(bp_dtb) $<
 
 $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 	$(MAKE) -C $< O=$(opensbi_wrkdir) \
