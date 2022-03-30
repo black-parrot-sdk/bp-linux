@@ -8,6 +8,8 @@ BP_SDK_BIN_DIR     ?= $(BP_SDK_INSTALL_DIR)/bin
 BP_LINUX_DIR       := $(BP_SDK_DIR)/linux
 PATH               := $(BP_SDK_BIN_DIR):$(PATH)
 
+DTC ?= dtc
+
 OPENSBI_NCPUS ?= 1
 # memory size in MiB
 MEM_SIZE      ?= 64
@@ -78,7 +80,7 @@ $(bp_dts):
 	python $(GENDTS_PY) --ncpus=$(OPENSBI_NCPUS) --mem-size=$(MEM_SIZE) > $(bp_dts)
 
 $(bp_dtb): $(bp_dts)
-	dtc -O dtb -o $(bp_dtb) $<
+	$(DTC) -O dtb -o $(bp_dtb) $<
 
 $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 	$(MAKE) -C $< O=$(opensbi_wrkdir) \
