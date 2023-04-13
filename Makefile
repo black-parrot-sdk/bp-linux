@@ -86,7 +86,8 @@ $(bp_dtb): $(bp_dts)
 $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 	$(MAKE) -C $< O=$(opensbi_wrkdir) \
 		PLATFORM=blackparrot \
-		PLATFORM_RISCV_ISA=rv64imafd \
+		PLATFORM_RISCV_ISA=rv64imafdc \
+		PLATFORM_RISCV_ABI=lp64d \
 		PLATFORM_HART_COUNT=$(OPENSBI_NCPUS) \
 		CROSS_COMPILE=$(LINUX_TARGET)- \
 		FW_PAYLOAD_PATH=$(vmlinux_binary)
@@ -99,8 +100,8 @@ sysroot: $(buildroot_sysroot_stamp)
 vmlinux: $(vmlinux_stripped)
 opensbi: $(fw_payload)
 
-clean:
-	rm -rf $(wrkdir)/*
+clean: clean_buildroot
+	rm -rf linux.riscv
 
 clean_opensbi:
 	rm -rf $(opensbi_wrkdir)
@@ -111,4 +112,5 @@ clean_vmlinux: clean_opensbi
 clean_sysroot: clean_vmlinux
 	rm -rf $(buildroot_sysroot) $(buildroot_sysroot_stamp)
 
-clean_buildroot: clean
+clean_buildroot:
+	rm -rf $(wrkdir)
