@@ -86,7 +86,7 @@ $(bp_dtb): $(bp_dts)
 $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 	$(MAKE) -C $< O=$(opensbi_wrkdir) \
 		PLATFORM=blackparrot \
-		PLATFORM_RISCV_ISA=rv64imafdc \
+		PLATFORM_RISCV_ISA=rv64gc \
 		PLATFORM_RISCV_ABI=lp64d \
 		PLATFORM_HART_COUNT=$(OPENSBI_NCPUS) \
 		CROSS_COMPILE=$(LINUX_TARGET)- \
