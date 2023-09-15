@@ -16,7 +16,7 @@ OPENSBI_NCPUS ?= 1
 MEM_SIZE      ?= 64
 GENDTS_PY     ?= $(BP_LINUX_DIR)/gendts.py
 
-opensbi_srcdir   := $(BP_SDK_DIR)/opensbi
+opensbi_srcdir   := $(BP_LINUX_DIR)/opensbi
 linux_srcdir     := $(BP_LINUX_DIR)/linux
 buildroot_srcdir := $(BP_LINUX_DIR)/buildroot
 

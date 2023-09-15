@@ -46,7 +46,7 @@ class DTS:
 \t\t\treg = <0x{0}>;
 \t\t\tstatus = "okay";
 \t\t\tcompatible = "riscv";
-\t\t\triscv,isa = "rv64gc";
+\t\t\triscv,isa = "rv64imafdc";
 \t\t\tmmu-type = "riscv,sv39";
 \t\t\tclock-frequency = <1000000000>;
 \t\t\tCPU{0}_intc: interrupt-controller {{

@@ -8,3 +8,6 @@
 	url = https://github.com/buildroot/buildroot.git
     branch = master
     ignore = dirty
+[submodule "opensbi"]
+	path = opensbi
+	url = https://github.com/black-parrot-sdk/opensbi
