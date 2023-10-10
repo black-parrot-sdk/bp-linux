@@ -15,6 +15,12 @@ OPENSBI_NCPUS ?= 1
 # memory size in MiB
 MEM_SIZE      ?= 64
 GENDTS_PY     ?= $(BP_LINUX_DIR)/gendts.py
+# Address of the Flattened Device Tree (FDT) blob
+# The difference between this address and the FW_TEXT_START defined in OpenSBI limits the
+# size of the OpenSBI payload binary (32 MiB by default)
+# Set to a higher address to increase maximum payload size:
+# 0x88200000 for 128 MiB, 0xA0200000 for 512 MiB, 0xC0200000 for 1 GiB
+FDT_ADDR ?= 0x82200000
 
 opensbi_srcdir   := $(BP_LINUX_DIR)/opensbi
 linux_srcdir     := $(BP_LINUX_DIR)/linux
@@ -42,6 +48,12 @@ bp_dtb           := $(opensbi_wrkdir)/platform/blackparrot/blackparrot.dtb
 $(buildroot_wrkdir)/.config: $(buildroot_srcdir)
 	mkdir -p $(dir $@)
 	cp $(buildroot_config) $@
+ifdef WITH_OVERLAY
+	mkdir -p $(buildroot_wrkdir)/rootfs-overlay
+	cp -R $(WITH_OVERLAY) $(buildroot_wrkdir)/rootfs-overlay/
+	#echo 'BR2_ROOTFS_OVERLAY="../work/buildroot/rootfs-overlay"' >> $@
+	echo 'BR2_ROOTFS_OVERLAY="$(buildroot_wrkdir)/rootfs-overlay"' >> $@
+endif
 	$(MAKE) -C $< RISCV=$(BP_SDK_INSTALL_DIR) PATH=$(PATH) O=$(buildroot_wrkdir) olddefconfig CROSS_COMPILE=$(LINUX_TARGET)-
 
 $(buildroot_tar): $(buildroot_srcdir) $(buildroot_wrkdir)/.config
@@ -89,6 +101,7 @@ $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 		PLATFORM_RISCV_ISA=rv64gc \
 		PLATFORM_RISCV_ABI=lp64d \
 		PLATFORM_HART_COUNT=$(OPENSBI_NCPUS) \
+		PLATFORM_FDT_ADDR=$(FDT_ADDR) \
 		CROSS_COMPILE=$(LINUX_TARGET)- \
 		FW_PAYLOAD_PATH=$(vmlinux_binary)
 
