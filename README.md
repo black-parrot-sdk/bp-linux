@@ -1,4 +1,7 @@
 # Linux on BlackParrot
+
+[![Join the chat at https://gitter.im/black-parrot/linux](https://badges.gitter.im/black-parrot/linux.svg)](https://gitter.im/black-parrot/linux?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 This is the repository for building a RISC-V Linux binary for BlackParrot.
 We use Buildroot to generate a BusyBox root filesystem and we use OpenSBI as the machine-mode firmware.
 The following commands are run within this directory.
