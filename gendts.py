@@ -86,7 +86,7 @@ class DTS:
 \t\tcompatible = "ucb,htif0";
 \t};
 \tchosen {
-\t\tbootargs = "console=hvc0 loglevel=8";
+\t\tbootargs = "console=hvc0 loglevel=8 root=/dev/ram0";
 \t};
 };'''
     )
