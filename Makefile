@@ -72,7 +72,7 @@ $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 		PLATFORM=generic/blackparrot \
 		PLATFORM_FDT_PATH=$(bp_dtb) \
 		PLATFORM_ADDITIONAL_CFLAGS="-DPLATFORM_HART_COUNT=$(OPENSBI_NCPUS) -I$(BP_SDK_INCLUDE_DIR)" \
-		PAYLOAD_PATH=$(vmlinux_binary)
+		FW_PAYLOAD=y PAYLOAD_PATH=$(vmlinux_binary)
 
 linux.riscv: $(fw_payload)
 	cp $< $@
