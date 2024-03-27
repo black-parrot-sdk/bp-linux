@@ -1,13 +1,10 @@
-[submodule "linux"]
-	path = linux
-    url = https://github.com/torvalds/linux.git
-    branch = master
-    ignore = dirty
 [submodule "buildroot"]
-	path = buildroot
-	url = https://github.com/buildroot/buildroot.git
+    path = buildroot
+    url = https://github.com/buildroot/buildroot.git
     branch = master
     ignore = dirty
 [submodule "opensbi"]
-	path = opensbi
-	url = https://github.com/black-parrot-sdk/opensbi
+    path = opensbi
+    url = https://github.com/riscv-software-src/opensbi
+    branch = master
+    ignore = dirty

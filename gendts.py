@@ -15,80 +15,89 @@ class DTS:
   def __init__(self, ncpus, mem_size):
     self.ncpus = ncpus
     self.mem_size_bytes = mem_size * 1024 * 1024
-    if self.mem_size_bytes < 0x100000000:
-      self.mem_size_upper = 0
-      self.mem_size_lower = self.mem_size_bytes
-    else:
-      self.mem_size_lower = self.mem_size_bytes & 0xFFFFFFFF
-      self.mem_size_upper = self.mem_size_bytes >> 32
+    self.mem_size_lower = hex(self.mem_size_bytes & 0xFFFFFFFF)
+    self.mem_size_upper = hex(self.mem_size_bytes >> 32)
 
   def gendts(self):
 
-    print(
-'''
+    print('''
 /dts-v1/;
 
-/ {
-\t#address-cells = <2>;
-\t#size-cells = <2>;
-\tcompatible = "ucbbar,spike-bare-dev";
-\tmodel = "ucbbar,spike-bare";
-\tcpus {
-\t\t#address-cells = <1>;
-\t\t#size-cells = <0>;
-\t\ttimebase-frequency = <10000000>;'''
+/ {{
+    #address-cells = <2>;
+    #size-cells = <2>;
+    compatible = "blackparrot,riscv64";
+    cpus {{
+        #address-cells = <1>;
+        #size-cells = <0>;
+        timebase-frequency = <10000000>;
+    '''.format()
     )
 
     for i in range(0, self.ncpus):
       print('''
-\t\tCPU{0}: cpu@{0} {{
-\t\t\tdevice_type = "cpu";
-\t\t\treg = <0x{0}>;
-\t\t\tstatus = "okay";
-\t\t\tcompatible = "riscv";
-\t\t\triscv,isa = "rv64imafdc";
-\t\t\tmmu-type = "riscv,sv39";
-\t\t\tclock-frequency = <1000000000>;
-\t\t\tCPU{0}_intc: interrupt-controller {{
-\t\t\t\t#interrupt-cells = <1>;
-\t\t\t\tinterrupt-controller;
-\t\t\t\tcompatible = "riscv,cpu-intc";
-\t\t\t}};
-\t\t}};'''
-      .format(format(i, 'x'))
+        CPU{0}: cpu@{0} {{
+            clocks = <&clk0>;
+            device_type = "cpu";
+            reg = <{0}>;
+            status = "okay";
+            compatible = "riscv";
+            riscv,isa = "rv64imafdc";
+            mmu-type = "riscv,sv39";
+            CPU{0}_intc: interrupt-controller {{
+                #interrupt-cells = <1>;
+                interrupt-controller;
+                compatible = "riscv,cpu-intc";
+            }};
+        }};
+      '''.format(format(i, 'x'))
       )
 
     print('''
-\t}};
-\tmemory@80000000 {{
-\t\tdevice_type = "memory";
-\t\treg = <0x0 0x80000000 0x{0} 0x{1}>;
-\t}};
-\tsoc {{
-\t\t#address-cells = <2>;
-\t\t#size-cells = <2>;
-\t\tcompatible = "ucbbar,spike-bare-soc", "simple-bus";
-\t\tranges;
-\t\tclint@300000 {{
-\t\t\tcompatible = "riscv,clint0";
-\t\t\tinterrupts-extended = <'''
-    .format(format(self.mem_size_upper, 'x'), format(self.mem_size_lower, 'x'))
+    }};
+      clocks {{
+          clk0: osc {{
+              compatible = "fixed-clock";
+              #clock-cells = <0>;
+              clock-frequency = <66667000>;
+          }};
+      }};
+    '''.format()
+    );
+
+    print('''
+    memory@80000000 {{
+        device_type = "memory";
+        reg = <0x0 0x80000000 {0} {1}>;
+    }};
+    soc {{
+        #address-cells = <2>;
+        #size-cells = <2>;
+        compatible = "blackparrot,chipset", "simple-bus";
+        ranges;
+        uart0: uart@101000 {{
+            compatible = "blackparrot,uart";
+            status = "okay";
+        }};
+
+        clint0: clint@300000 {{
+            compatible = "blackparrot,clint";
+            interrupts-extended = <
+    '''.format(self.mem_size_upper, self.mem_size_lower)
     )
 
     for i in range(0, self.ncpus):
-      print('''\t\t\t\t&CPU{0}_intc 3 &CPU{0}_intc 7'''.format(format(i, 'x')))
+      print('''                &CPU{0}_intc 3 &CPU{0}_intc 7'''.format(format(i, 'x')))
 
-    print('''\t\t\t>;
-\t\t\treg = <0x0 0x300000 0x0 0xc0000>;
-\t\t};
-\t};
-\thtif {
-\t\tcompatible = "ucb,htif0";
-\t};
-\tchosen {
-\t\tbootargs = "console=hvc0 loglevel=8";
-\t};
-};'''
+    print('''            >;
+            reg = <0x0 0x300000 0x0 0xc0000>;
+        }};
+    }};
+    chosen {{
+        bootargs = "console=hvc0 loglevel=8 root=/dev/ram0";
+    }};
+}};
+    '''.format()
     )
 
 

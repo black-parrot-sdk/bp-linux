@@ -5,16 +5,25 @@ TOP                ?= $(shell git rev-parse --show-toplevel)
 BP_SDK_DIR         ?= $(TOP)/..
 BP_SDK_INSTALL_DIR ?= $(BP_SDK_DIR)/install
 BP_SDK_BIN_DIR     ?= $(BP_SDK_INSTALL_DIR)/bin
-BP_LINUX_DIR       := $(BP_SDK_DIR)/linux
+BP_SDK_LIB_DIR     ?= $(BP_SDK_INSTALL_DIR)/lib
+BP_SDK_LIB_DIR64   ?= $(BP_SDK_INSTALL_DIR)/lib64
+BP_SDK_INCLUDE_DIR ?= $(BP_SDK_INSTALL_DIR)/include
+BP_LINUX_DIR       ?= $(BP_SDK_DIR)/linux
 PATH               := $(BP_SDK_BIN_DIR):$(PATH)
 
 PYTHON ?= python
 DTC ?= dtc
+GIT ?= git
+WGET ?= wget
+TAR ?= tar
+MKDIR ?= mkdir -p
+MV ?= mv
 
 OPENSBI_NCPUS ?= 1
 # memory size in MiB
 MEM_SIZE      ?= 64
 GENDTS_PY     ?= $(BP_LINUX_DIR)/gendts.py
+WITH_SHELL    ?= $(BP_LINUX_DIR)/scripts/test_info.sh
 
 opensbi_srcdir   := $(BP_LINUX_DIR)/opensbi
 linux_srcdir     := $(BP_LINUX_DIR)/linux
@@ -26,49 +35,29 @@ buildroot_wrkdir        := $(wrkdir)/buildroot
 buildroot_sysroot       := $(wrkdir)/sysroot
 buildroot_sysroot_stamp := $(wrkdir)/.buildroot_sysroot_stamp
 buildroot_tar           := $(buildroot_wrkdir)/images/rootfs.tar
-buildroot_config        := $(BP_LINUX_DIR)/cfg/buildroot_initramfs_config
+buildroot_config        := $(BP_LINUX_DIR)/cfg/buildroot_defconfig
 
-linux_wrkdir     := $(wrkdir)/linux
-linux_defconfig  := $(BP_LINUX_DIR)/cfg/linux_defconfig
-vmlinux          := $(linux_wrkdir)/vmlinux
-vmlinux_stripped := $(linux_wrkdir)/vmlinux-stripped
-vmlinux_binary   := $(linux_wrkdir)/vmlinux.bin
+kernel_version   := 6.6
+vmlinux          := $(buildroot_wrkdir)/images/vmlinux
+vmlinux_stripped := $(buildroot_wrkdir)/images/vmlinux-stripped
+vmlinux_binary   := $(buildroot_wrkdir)/images/vmlinux.bin
 
 opensbi_wrkdir   := $(wrkdir)/opensbi
-fw_payload       := $(opensbi_wrkdir)/platform/blackparrot/firmware/fw_payload.elf
-bp_dts           := $(opensbi_wrkdir)/platform/blackparrot/blackparrot.dts
-bp_dtb           := $(opensbi_wrkdir)/platform/blackparrot/blackparrot.dtb
+fw_payload       := $(opensbi_wrkdir)/platform/generic/blackparrot/firmware/fw_payload.elf
+bp_dts           := $(opensbi_wrkdir)/platform/generic/blackparrot/blackparrot.dts
+bp_dtb           := $(opensbi_wrkdir)/platform/generic/blackparrot/blackparrot.dtb
 
 $(buildroot_wrkdir)/.config: $(buildroot_srcdir)
 	mkdir -p $(dir $@)
 	cp $(buildroot_config) $@
+	cp -r $(BP_LINUX_DIR)/rootfs $(buildroot_sysroot)
+ifneq ($(WITH_SHELL),"")
+	cp $(WITH_SHELL) $(buildroot_sysroot)/etc/init.d/S100$(notdir $(WITH_SHELL))
+endif
 	$(MAKE) -C $< RISCV=$(BP_SDK_INSTALL_DIR) PATH=$(PATH) O=$(buildroot_wrkdir) olddefconfig CROSS_COMPILE=$(LINUX_TARGET)-
 
-$(buildroot_tar): $(buildroot_srcdir) $(buildroot_wrkdir)/.config
+$(vmlinux): $(buildroot_srcdir) $(buildroot_wrkdir)/.config
 	$(MAKE) -C $< RISCV=$(BP_SDK_INSTALL_DIR) PATH=$(PATH) O=$(buildroot_wrkdir)
-
-$(buildroot_sysroot_stamp): $(buildroot_tar)
-	mkdir -p $(buildroot_sysroot)
-	tar -xpf $< -C $(buildroot_sysroot) --exclude ./dev --exclude ./usr/share/locale
-ifdef WITH_SHELL
-	sed "s/INITSHELL/$(notdir $(WITH_SHELL))/g" $(BP_LINUX_DIR)/cfg/inittab > $(buildroot_sysroot)/etc/inittab
-	cp $(WITH_SHELL) $(buildroot_sysroot)/$(notdir $(WITH_SHELL))
-endif
-	touch $@
-
-$(linux_wrkdir)/.config: $(linux_srcdir)
-	mkdir -p $(dir $@)
-	cp -p $(linux_defconfig) $@
-	$(MAKE) -C $< O=$(linux_wrkdir) ARCH=riscv olddefconfig
-
-$(vmlinux): $(linux_srcdir) $(linux_wrkdir)/.config $(buildroot_sysroot_stamp)
-	echo "n" | $(MAKE) -C $< O=$(linux_wrkdir) \
-		CONFIG_INITRAMFS_SOURCE="$(BP_LINUX_DIR)/cfg/initramfs.txt $(buildroot_sysroot)" \
-		CONFIG_INITRAMFS_ROOT_UID=$(shell id -u) \
-		CONFIG_INITRAMFS_ROOT_GID=$(shell id -g) \
-		CROSS_COMPILE=$(LINUX_TARGET)- \
-		ARCH=riscv \
-		vmlinux
 
 $(vmlinux_stripped): $(vmlinux)
 	$(LINUX_TARGET)-strip -o $@ $<
@@ -77,20 +66,21 @@ $(vmlinux_binary): $(vmlinux_stripped)
 	$(LINUX_TARGET)-objcopy -O binary $< $@
 
 $(bp_dts):
-	mkdir -p $(opensbi_wrkdir)/platform/blackparrot
+	mkdir -p $(@D)
 	$(PYTHON) $(GENDTS_PY) --ncpus=$(OPENSBI_NCPUS) --mem-size=$(MEM_SIZE) > $(bp_dts)
 
 $(bp_dtb): $(bp_dts)
+	mkdir -p $(@D)
 	$(DTC) -O dtb -o $(bp_dtb) $<
 
 $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 	$(MAKE) -C $< O=$(opensbi_wrkdir) \
-		PLATFORM=blackparrot \
-		PLATFORM_RISCV_ISA=rv64gc \
-		PLATFORM_RISCV_ABI=lp64d \
-		PLATFORM_HART_COUNT=$(OPENSBI_NCPUS) \
 		CROSS_COMPILE=$(LINUX_TARGET)- \
-		FW_PAYLOAD_PATH=$(vmlinux_binary)
+		PLATFORM=generic/blackparrot \
+		PLATFORM_FDT_PATH=$(bp_dtb) \
+		PLATFORM_ADDITIONAL_CFLAGS="-DPLATFORM_HART_COUNT=$(OPENSBI_NCPUS) -I$(BP_SDK_INCLUDE_DIR)" \
+		FW_PAYLOAD=y \
+		PAYLOAD_PATH=$(vmlinux_binary)
 
 linux.riscv: $(fw_payload)
 	cp $< $@
@@ -110,7 +100,7 @@ clean_vmlinux: clean_opensbi
 	rm -rf $(linux_wrkdir)
 
 clean_sysroot: clean_vmlinux
-	rm -rf $(buildroot_sysroot) $(buildroot_sysroot_stamp)
+	rm -rf $(buildroot_sysroot)
 
 clean_buildroot:
 	rm -rf $(wrkdir)
