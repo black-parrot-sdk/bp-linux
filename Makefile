@@ -5,12 +5,19 @@ TOP                ?= $(shell git rev-parse --show-toplevel)
 BP_SDK_DIR         ?= $(TOP)/..
 BP_SDK_INSTALL_DIR ?= $(BP_SDK_DIR)/install
 BP_SDK_BIN_DIR     ?= $(BP_SDK_INSTALL_DIR)/bin
+BP_SDK_LIB_DIR     ?= $(BP_SDK_INSTALL_DIR)/lib
+BP_SDK_LIB_DIR64   ?= $(BP_SDK_INSTALL_DIR)/lib64
 BP_SDK_INCLUDE_DIR ?= $(BP_SDK_INSTALL_DIR)/include
-BP_LINUX_DIR       := $(BP_SDK_DIR)/linux
+BP_LINUX_DIR       ?= $(BP_SDK_DIR)/linux
 PATH               := $(BP_SDK_BIN_DIR):$(PATH)
 
 PYTHON ?= python
 DTC ?= dtc
+GIT ?= git
+WGET ?= wget
+TAR ?= tar
+MKDIR ?= mkdir -p
+MV ?= mv
 
 OPENSBI_NCPUS ?= 1
 # memory size in MiB
@@ -72,7 +79,8 @@ $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 		PLATFORM=generic/blackparrot \
 		PLATFORM_FDT_PATH=$(bp_dtb) \
 		PLATFORM_ADDITIONAL_CFLAGS="-DPLATFORM_HART_COUNT=$(OPENSBI_NCPUS) -I$(BP_SDK_INCLUDE_DIR)" \
-		FW_PAYLOAD=y PAYLOAD_PATH=$(vmlinux_binary)
+		FW_PAYLOAD=y \
+		PAYLOAD_PATH=$(vmlinux_binary)
 
 linux.riscv: $(fw_payload)
 	cp $< $@
