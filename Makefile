@@ -23,7 +23,7 @@ OPENSBI_NCPUS ?= 1
 # memory size in MiB
 MEM_SIZE      ?= 64
 GENDTS_PY     ?= $(BP_LINUX_DIR)/gendts.py
-WITH_SHELL    ?= $(BP_LINUX_DIR)/scripts/test_info.sh
+WITH_SHELL    ?=
 
 opensbi_srcdir   := $(BP_LINUX_DIR)/opensbi
 linux_srcdir     := $(BP_LINUX_DIR)/linux
