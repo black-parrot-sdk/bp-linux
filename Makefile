@@ -37,7 +37,6 @@ buildroot_sysroot_stamp := $(wrkdir)/.buildroot_sysroot_stamp
 buildroot_tar           := $(buildroot_wrkdir)/images/rootfs.tar
 buildroot_config        := $(BP_LINUX_DIR)/cfg/buildroot_defconfig
 
-kernel_version   := 6.6
 vmlinux          := $(buildroot_wrkdir)/images/vmlinux
 vmlinux_stripped := $(buildroot_wrkdir)/images/vmlinux-stripped
 vmlinux_binary   := $(buildroot_wrkdir)/images/vmlinux.bin
