@@ -51,7 +51,7 @@ $(buildroot_wrkdir)/.config: $(buildroot_srcdir)
 	mkdir -p $(dir $@)
 	cp $(buildroot_config) $@
 	cp -r $(BP_LINUX_DIR)/rootfs $(buildroot_sysroot)
-ifneq ($(WITH_SHELL),"")
+ifneq ($(WITH_SHELL),)
 	cp $(WITH_SHELL) $(buildroot_sysroot)/etc/init.d/S100$(notdir $(WITH_SHELL))
 endif
 	$(MAKE) -C $< RISCV=$(BP_SDK_INSTALL_DIR) PATH=$(PATH) O=$(buildroot_wrkdir) olddefconfig CROSS_COMPILE=$(LINUX_TARGET)-
