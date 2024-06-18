@@ -19,11 +19,12 @@ TAR ?= tar
 MKDIR ?= mkdir -p
 MV ?= mv
 
+SCRIPT_DIR    ?= $(BP_LINUX_DIR)/scripts
 OPENSBI_NCPUS ?= 1
 # memory size in MiB
 MEM_SIZE      ?= 64
 GENDTS_PY     ?= $(BP_LINUX_DIR)/gendts.py
-WITH_SHELL    ?=
+WITH_SHELL    ?= $(SCRIPT_DIR)/test_shutdown.sh
 
 opensbi_srcdir   := $(BP_LINUX_DIR)/opensbi
 linux_srcdir     := $(BP_LINUX_DIR)/linux
@@ -50,8 +51,9 @@ $(buildroot_wrkdir)/.config: $(buildroot_srcdir)
 	mkdir -p $(dir $@)
 	cp $(buildroot_config) $@
 	cp -r $(BP_LINUX_DIR)/rootfs $(buildroot_sysroot)
+	cp $(SCRIPT_DIR)/test_info.sh $(buildroot_sysroot)/etc/init.d/S100test_info.sh
 ifneq ($(WITH_SHELL),)
-	cp $(WITH_SHELL) $(buildroot_sysroot)/etc/init.d/S100$(notdir $(WITH_SHELL))
+	cp $(WITH_SHELL) $(buildroot_sysroot)/etc/init.d/S200$(notdir $(WITH_SHELL))
 endif
 	$(MAKE) -C $< RISCV=$(BP_SDK_INSTALL_DIR) PATH=$(PATH) O=$(buildroot_wrkdir) olddefconfig CROSS_COMPILE=$(LINUX_TARGET)-
 
