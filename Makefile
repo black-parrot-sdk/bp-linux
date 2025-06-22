@@ -79,7 +79,7 @@ $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 		CROSS_COMPILE=$(LINUX_TARGET)- \
 		PLATFORM=generic/blackparrot \
 		PLATFORM_FDT_PATH=$(bp_dtb) \
-		PLATFORM_ADDITIONAL_CFLAGS="-DPLATFORM_HART_COUNT=$(OPENSBI_NCPUS) -I$(BP_SDK_INCLUDE_DIR)" \
+		PLATFORM_ADDITIONAL_CFLAGS="-std=gnu17 -DPLATFORM_HART_COUNT=$(OPENSBI_NCPUS) -I$(BP_SDK_INCLUDE_DIR)" \
 		FW_PAYLOAD=y \
 		PAYLOAD_PATH=$(vmlinux_binary)
 
