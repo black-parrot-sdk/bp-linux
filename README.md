@@ -14,7 +14,7 @@ make linux.riscv [WITH_SHELL=<path_to_sh_script>] [OPENSBI_NCPUS=<n>] [MEM_SIZE=
 **default login:** user="root", password=""
 
 ### Build Steps
-The build order is [Buildroot -> sysroot generation -> Linux -> OpenSBI], so each step can be done seperately in the following order:
+The build order is [Buildroot -> Linux -> OpenSBI], so each step can be done seperately in the following order:
 ```
 make buildroot
 make sysroot [WITH_SHELL=<path_to_sh_script>]

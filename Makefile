@@ -1,6 +1,4 @@
 
-export LINUX_TARGET ?= riscv64-unknown-linux-gnu
-
 TOP                ?= $(shell git rev-parse --show-toplevel)
 BP_SDK_DIR         ?= $(TOP)/..
 BP_SDK_INSTALL_DIR ?= $(BP_SDK_DIR)/install
@@ -10,6 +8,11 @@ BP_SDK_LIB_DIR64   ?= $(BP_SDK_INSTALL_DIR)/lib64
 BP_SDK_INCLUDE_DIR ?= $(BP_SDK_INSTALL_DIR)/include
 BP_LINUX_DIR       ?= $(BP_SDK_DIR)/linux
 PATH               := $(BP_SDK_BIN_DIR):$(PATH)
+
+export LINUX_TARGET ?= riscv64-unknown-linux-gnu
+export CROSS_COMPILE ?= $(LINUX_TARGET)-
+export RISCV ?= $(BP_SDK_INSTALL_DIR)
+export PATH
 
 PYTHON ?= python
 DTC ?= dtc
@@ -34,9 +37,8 @@ wrkdir           := $(BP_LINUX_DIR)/work
 
 buildroot_wrkdir        := $(wrkdir)/buildroot
 buildroot_sysroot       := $(wrkdir)/sysroot
-buildroot_sysroot_stamp := $(wrkdir)/.buildroot_sysroot_stamp
-buildroot_tar           := $(buildroot_wrkdir)/images/rootfs.tar
-buildroot_config        := $(BP_LINUX_DIR)/cfg/buildroot_defconfig
+buildroot_cfg           := $(buildroot_wrkdir)/.config
+buildroot_defconfig     := $(BP_LINUX_DIR)/cfg/buildroot_defconfig
 
 vmlinux          := $(buildroot_wrkdir)/images/vmlinux
 vmlinux_stripped := $(buildroot_wrkdir)/images/vmlinux-stripped
@@ -47,17 +49,18 @@ fw_payload       := $(opensbi_wrkdir)/platform/generic/blackparrot/firmware/fw_p
 bp_dts           := $(opensbi_wrkdir)/platform/generic/blackparrot/blackparrot.dts
 bp_dtb           := $(opensbi_wrkdir)/platform/generic/blackparrot/blackparrot.dtb
 
-$(buildroot_wrkdir)/.config: $(buildroot_srcdir)
+$(buildroot_cfg): $(buildroot_srcdir)
 	mkdir -p $(dir $@)
-	cp $(buildroot_config) $@
+	$(MAKE) -C $< O=$(buildroot_wrkdir) defconfig BR2_DEFCONFIG=$(buildroot_defconfig)
+
+$(buildroot_sysroot): $(buildroot_cfg)
 	cp -r $(BP_LINUX_DIR)/rootfs $(buildroot_sysroot)
 	cp $(SCRIPT_DIR)/test_info.sh $(buildroot_sysroot)/etc/init.d/S100test_info.sh
 ifneq ($(WITH_SHELL),)
 	cp $(WITH_SHELL) $(buildroot_sysroot)/etc/init.d/S200$(notdir $(WITH_SHELL))
 endif
-	$(MAKE) -C $< RISCV=$(BP_SDK_INSTALL_DIR) PATH=$(PATH) O=$(buildroot_wrkdir) olddefconfig CROSS_COMPILE=$(LINUX_TARGET)-
 
-$(vmlinux): $(buildroot_srcdir) $(buildroot_wrkdir)/.config
+$(vmlinux): $(buildroot_srcdir) $(buildroot_sysroot) 
 	$(MAKE) -C $< RISCV=$(BP_SDK_INSTALL_DIR) PATH=$(PATH) O=$(buildroot_wrkdir)
 
 $(vmlinux_stripped): $(vmlinux)
@@ -76,18 +79,17 @@ $(bp_dtb): $(bp_dts)
 
 $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 	$(MAKE) -C $< O=$(opensbi_wrkdir) \
-		CROSS_COMPILE=$(LINUX_TARGET)- \
 		PLATFORM=generic/blackparrot \
 		PLATFORM_FDT_PATH=$(bp_dtb) \
-		PLATFORM_ADDITIONAL_CFLAGS="-std=gnu17 -DPLATFORM_HART_COUNT=$(OPENSBI_NCPUS) -I$(BP_SDK_INCLUDE_DIR)" \
+		PLATFORM_ADDITIONAL_CFLAGS="-std=gnu17 -DPLATFORM_HART_COUNT=$(OPENSBI_NCPUS)" \
 		FW_PAYLOAD=y \
 		PAYLOAD_PATH=$(vmlinux_binary)
 
 linux.riscv: $(fw_payload)
 	cp $< $@
 
-buildroot: $(buildroot_tar)
-sysroot: $(buildroot_sysroot_stamp)
+buildroot: $(buildroot_cfg)
+sysroot: $(buildroot_sysroot)
 vmlinux: $(vmlinux_stripped)
 opensbi: $(fw_payload)
 
