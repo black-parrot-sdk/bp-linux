@@ -85,7 +85,9 @@ $(fw_payload): $(opensbi_srcdir) $(vmlinux_binary) $(bp_dtb)
 		FW_PAYLOAD=y \
 		PAYLOAD_PATH=$(vmlinux_binary)
 
-linux.riscv: $(fw_payload)
+linux-$(OPENSBI_NCPUS).riscv: $(fw_payload)
+	cp $< $@
+linux.riscv: linux-$(OPENSBI_NCPUS).riscv
 	cp $< $@
 
 buildroot: $(buildroot_cfg)
@@ -95,6 +97,7 @@ opensbi: $(fw_payload)
 
 clean: clean_buildroot
 	rm -rf linux.riscv
+	rm -rf linux-*.riscv
 
 clean_opensbi:
 	rm -rf $(opensbi_wrkdir)
